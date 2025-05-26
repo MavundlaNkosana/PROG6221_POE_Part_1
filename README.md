@@ -24,8 +24,8 @@ CyberKnight is a chatbot designed to educate internet users on about cybersecuri
    - 'help/topic' = displays available
    - 'exit' = closes
   
-4. Github repository link
-   -
+5. Github repository link
+   - https://github.com/MavundlaNkosana/PROG6221_POE_Part_1
   
 
 
