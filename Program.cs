@@ -1,11 +1,52 @@
-﻿namespace CyberKnight
-{
-    using System;
-    using System.Media;
-    using System.Threading;
+﻿using System;
+using System.Media;
+using System.Threading;
+using System.Collections.Generic;
 
+namespace CyberKnight
+{
     class CyberKnight
     {
+        // Memory storage for user preferences
+        private static Dictionary<string, string> userMemory = new Dictionary<string, string>();
+        
+        // Response banks for varied answers
+        private static Dictionary<string, List<string>> responseBank = new Dictionary<string, List<string>>()
+        {
+            {"password", new List<string>{
+                "Make sure to use strong, unique passwords for each account. Avoid using personal details!",
+                "A good password should be at least 12 characters long with a mix of letters, numbers and symbols.",
+                "Consider using a passphrase like 'PurpleTiger$JumpsHigh' instead of simple passwords."
+            }},
+            {"phishing", new List<string>{
+                "Be cautious of emails asking for personal information. Scammers often disguise themselves as trusted organizations.",
+                "Check the sender's email address carefully - phishing emails often use similar-looking addresses.",
+                "Never click on suspicious links. Hover over them first to see the actual URL destination."
+            }},
+            {"privacy", new List<string>{
+                "Review your social media privacy settings regularly - they often change without notice.",
+                "Be careful what personal info you share online - even innocent details can be used against you.",
+                "Consider using a VPN when on public Wi-Fi to protect your browsing activity."
+            }},
+            {"malware", new List<string>{
+                "Always keep your antivirus software updated to protect against the latest malware threats.",
+                "Be extremely careful with email attachments, even from people you know.",
+                "Regularly back up your important files to protect against ransomware attacks."
+            }},
+            {"browsing", new List<string>{
+                "Look for HTTPS and the padlock icon to ensure secure connections.",
+                "Use private browsing mode when accessing sensitive information on shared computers.",
+                "Clear your browser cache regularly to remove tracking cookies."
+            }},
+            {"engineering", new List<string>{
+                "- Be skeptical of urgent requests for information",
+                "- Verify identities before sharing sensitive info",
+                "- Don't trust caller ID because it can be spoofed",
+                "- Be cautious of 'too good to be true' offers",
+                "- Educate yourself about common tactics",
+            }}
+        };
+
         static void Main(string[] args)
         {
             // Attempt to play a welcome sound
@@ -16,7 +57,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Unable to play welcome sound: " + ex.Message);
+                Console.WriteLine("Unable to play welcome message: " + ex.Message);
             }
 
             // Display a stylized ASCII art banner
@@ -32,6 +73,7 @@
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine(@"
 
+
    ______      __              __ __       _       __    __ 
   / ____/_  __/ /_  ___  _____/ //_/____  (_)___ _/ /_  / /_
  / /   / / / / __ \/ _ \/ ___/ ,<  / __ \/ / __ `/ __ \/ __/
@@ -39,7 +81,8 @@
 \____/\__, /_.___/\___/_/  /_/ |_/_/ /_/_/\__, /_/ /_/\__/  
      /____/                              /____/             
 
-        Cybersecurity Awareness Assistant
+Cybersecurity Awareness Assistant
+
 ");
             Console.ResetColor();
             Console.WriteLine();
@@ -80,6 +123,9 @@
             Console.ResetColor();
             Console.WriteLine();
 
+            // Store user name in memory
+            userMemory["name"] = userName;
+
             // Begin interactive Q&A session
             StartConversation(userName);
         }
@@ -88,48 +134,215 @@
         static void StartConversation(string userName)
         {
             bool continueChat = true;
-
-            // Display available options
+            string currentTopic = "";
+            
             DisplayHelp();
 
             while (continueChat)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write($"{userName}, what would you like to know about? (type 'help' for the menu or 'exit' to quit): ");
+                string prompt = string.IsNullOrEmpty(currentTopic) 
+                    ? $"{userName}, what would you like to know about?" 
+                    : $"{userName}, would you like more info about {currentTopic} or a new topic?";
+                
+                Console.Write($"{prompt} (type 'help' for the topics or 'exit' to leave): ");
                 Console.ResetColor();
-                Console.ForegroundColor = ConsoleColor.Green;
-                string userInput = Console.ReadLine()?.ToLower() ?? string.Empty;
-                Console.ResetColor();
+                
+                string userInput = Console.ReadLine()?.ToLower() ?? "";
                 Console.WriteLine();
 
                 if (string.IsNullOrWhiteSpace(userInput))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("I didn't quite catch that. Could you please ask again?");
-                    Console.ResetColor();
+                    HandleEmptyInput();
                     continue;
                 }
 
                 if (userInput == "exit")
                 {
-                    // End session gracefully
+                    EndConversation(userName);
                     continueChat = false;
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine($"Goodbye, {userName}! Stay safe online!");
-                    Console.ResetColor();
                     continue;
                 }
 
-                if (userInput.Contains("help") || userInput.Contains("options"))
+                if (userInput.Contains("help") || userInput.Contains("topic"))
                 {
-                    // Redisplay help menu
                     DisplayHelp();
+                    currentTopic = "";
                     continue;
                 }
 
-                // Process user query
-                ProcessUserInput(userInput, userName);
+                // Process input and update current topic
+                currentTopic = ProcessUserInputWithFlow(userInput, userName, currentTopic);
             }
+        }
+
+        static string ProcessUserInputWithFlow(string input, string userName, string currentTopic)
+        {
+            // Check if user wants to continue current topic
+            if ((input.Contains("more") || input.Contains("again")) && !string.IsNullOrEmpty(currentTopic))
+            {
+                ProcessUserInput(currentTopic, userName);
+                return currentTopic;
+            }
+            
+            // Otherwise process new input and return new topic
+            ProcessUserInput(input, userName);
+            
+            // Detect and return new topic
+            if (input.Contains("password")) return "password security";
+            if (input.Contains("phish") || input.Contains("scam")) return "phishing";
+            if (input.Contains("privacy")) return "online privacy";
+            if (input.Contains("malware")) return "malware protection";
+            if (input.Contains("brows") || input.Contains("internet")) return "safe browsing";
+            
+            return ""; // No specific topic detected
+        }
+
+        // Responds based on user input topic
+        static void ProcessUserInput(string input, string userName)
+        {
+            bool responseFound = true;
+            Console.ForegroundColor = ConsoleColor.White;
+
+            // Sentiment detection
+            bool isWorried = input.Contains("worried") || input.Contains("concerned") || input.Contains("scared");
+            bool isCurious = input.Contains("curious") || input.Contains("wonder") || input.Contains("tell me");
+            bool isFrustrated = input.Contains("angry") || input.Contains("frustrated") || input.Contains("annoyed");
+
+            // Memory recall for personalization
+            if (input.Contains("remember") && userMemory.ContainsKey("interest"))
+            {
+                TypeWriterEffect($"I remember you're interested in {userMemory["interest"]}. " + 
+                                $"Here's something new about {userMemory["interest"]}...");
+                ProcessUserInput(userMemory["interest"], userName);
+                return;
+            }
+
+            // Enhanced keyword recognition with random responses
+            if (input.Contains("how are you"))
+            {
+                string[] greetings = {
+                    "I'm functioning at optimal security levels! How about you?",
+                    "My firewalls are up and I'm ready to help!",
+                    "I'm doing great! Always happy to discuss cybersecurity."
+                };
+                Random rand = new Random();
+                TypeWriterEffect(greetings[rand.Next(greetings.Length)]);
+            }
+            else if (input.Contains("purpose") || input.Contains("why do you exist"))
+            {
+                TypeWriterEffect("My purpose is to educate South African citizens about cybersecurity threats " +
+                                "and best practices to stay safe online.");
+            }
+            else if (input.Contains("what can i ask") || input.Contains("topics"))
+            {
+                DisplayHelp();
+            }
+            else if (input.Contains("password"))
+            {
+                if (isWorried) TypeWriterEffect("I understand password security can feel overwhelming. ");
+                string response = GetRandomResponse("password");
+                TypeWriterEffect(response);
+                
+                if (!userMemory.ContainsKey("interest")) 
+                    userMemory.Add("interest", "password security");
+            }
+            else if (input.Contains("phish") || input.Contains("scam"))
+            {
+                if (isWorried) TypeWriterEffect("Phishing scams are common but preventable. ");
+                string response = GetRandomResponse("phishing");
+                TypeWriterEffect(response);
+                
+                if (!userMemory.ContainsKey("interest")) 
+                    userMemory.Add("interest", "phishing prevention");
+            }
+            else if (input.Contains("privacy"))
+            {
+                if (isCurious) TypeWriterEffect("Great question! Privacy is crucial online. ");
+                string response = GetRandomResponse("privacy");
+                TypeWriterEffect(response);
+                
+                if (!userMemory.ContainsKey("interest")) 
+                    userMemory.Add("interest", "online privacy");
+            }
+            else if (input.Contains("malware"))
+            {
+                if (isFrustrated) TypeWriterEffect("Malware can be frustrating, but prevention is possible. ");
+                string response = GetRandomResponse("malware");
+                TypeWriterEffect(response);
+                
+                if (!userMemory.ContainsKey("interest")) 
+                    userMemory.Add("interest", "malware protection");
+            }
+            else if (input.Contains("brows") || input.Contains("internet"))
+            {
+                if (isCurious) TypeWriterEffect("Safe browsing is essential in today's digital world. ");
+                string response = GetRandomResponse("browsing");
+                TypeWriterEffect(response);
+                
+                if (!userMemory.ContainsKey("interest")) 
+                    userMemory.Add("interest", "safe browsing");
+            }
+            else if (input.Contains("social") || input.Contains("engineer"))
+            {
+                
+                if (isCurious) TypeWriterEffect("Social engineering tricks people into breaking security procedures:");
+                string response = GetRandomResponse("engineering");
+                TypeWriterEffect(response);
+
+                if (!userMemory.ContainsKey("interest"))
+                    userMemory.Add("interest", "engineering");
+            }
+            else
+            {
+                responseFound = false;
+            }
+
+            // Enhanced sentiment responses
+            if (isWorried)
+            {
+                TypeWriterEffect("\nI understand this can be concerning. Remember, being aware is the first step to protection!");
+            }
+            else if (isFrustrated)
+            {
+                TypeWriterEffect("\nCybersecurity can be frustrating, but you're doing great by seeking information!");
+            }
+            else if (isCurious)
+            {
+                TypeWriterEffect("\nThat's an excellent question! Knowledge is your best defense.");
+            }
+
+            if (!responseFound)
+            {
+                HandleUnknownInput();
+            }
+
+            Console.ResetColor();
+            Console.WriteLine();
+        }
+
+        static string GetRandomResponse(string topic)
+        {
+            Random rand = new Random();
+            List<string> responses = responseBank[topic];
+            return responses[rand.Next(responses.Count)];
+        }
+
+        static void HandleUnknownInput()
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            TypeWriterEffect("I'm not sure I understand. Could you try:");
+            Console.WriteLine("- Rephrasing your question");
+            Console.WriteLine("- Asking about passwords, phishing, or privacy");
+            Console.WriteLine("- Typing 'help' for more options");
+            Console.ResetColor();
+        }
+
+        static void HandleEmptyInput()
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("I didn't quite catch that. Could you please ask again?");
+            Console.ResetColor();
         }
 
         // Displays list of topics user can ask about
@@ -149,105 +362,21 @@
             Console.WriteLine();
         }
 
-        // Responds based on user input topic
-        static void ProcessUserInput(string input, string userName)
+        static void EndConversation(string userName)
         {
-            bool responseFound = true;
-
-            Console.ForegroundColor = ConsoleColor.White;
-
-            // Respond with preset cybersecurity info based on keywords
-            if (input.Contains("how are you"))
+            Console.ForegroundColor = ConsoleColor.Blue;
+            
+            // Personalize goodbye if we know user's interest
+            if (userMemory.ContainsKey("interest"))
             {
-                TypeWriterEffect("I'm doing GREAT! I'm just a program after all, and I'm here to help you with cybersecurity!");
-            }
-            else if (input.Contains("purpose") || input.Contains("why do you exist"))
-            {
-                TypeWriterEffect("My purpose is to educate people like you about cybersecurity threats and best practices to stay safe online.");
-            }
-            else if (input.Contains("what can i ask") || input.Contains("topics"))
-            {
-                TypeWriterEffect("You can ask me about various cybersecurity topics including:");
-                Console.WriteLine("- Creating strong passwords");
-                Console.WriteLine("- Identifying phishing attempts");
-                Console.WriteLine("- Safe browsing practices");
-                Console.WriteLine("- Recognizing social engineering");
-                Console.WriteLine("- Protecting against malware");
-                Console.WriteLine("- Maintaining online privacy");
-            }
-            else if (input.Contains("password"))
-            {
-                TypeWriterEffect("Strong passwords are your first line of defense:");
-                Console.WriteLine("- Use at least 12 characters");
-                Console.WriteLine("- Combine letters, numbers, and symbols");
-                Console.WriteLine("- Avoid common words or personal information");
-                Console.WriteLine("- Use a unique password for each account");
-                Console.WriteLine("- Consider using a password manager");
-            }
-            else if (input.Contains("phish"))
-            {
-                TypeWriterEffect("Phishing is when attackers try to trick you into revealing sensitive information:");
-                Console.WriteLine("- Be wary of unsolicited emails/messages");
-                Console.WriteLine("- Check sender addresses carefully");
-                Console.WriteLine("- Don't click on suspicious links");
-                Console.WriteLine("- Look for poor grammar and/or spelling");
-                Console.WriteLine("- When in doubt, contact the organization directly");
-            }
-            else if (input.Contains("brows") || input.Contains("internet"))
-            {
-                TypeWriterEffect("Safe browsing practices:");
-                Console.WriteLine("- Look for 'https://' and a padlock icon");
-                Console.WriteLine("- Keep your browser updated");
-                Console.WriteLine("- Use reputable browser extensions");
-                Console.WriteLine("- Clear cookies/cache regularly");
-                Console.WriteLine("- Be cautious with public Wi-Fi (use VPN if possible)");
-            }
-            else if (input.Contains("malware"))
-            {
-                TypeWriterEffect("Protecting against malware:");
-                Console.WriteLine("- Install reputable antivirus software");
-                Console.WriteLine("- Keep your operating system updated");
-                Console.WriteLine("- Don't download files from untrusted sources");
-                Console.WriteLine("- Be cautious with email attachments");
-                Console.WriteLine("- Regularly back up your important files");
-            }
-            else if (input.Contains("privacy"))
-            {
-                TypeWriterEffect("Maintaining online privacy:");
-                Console.WriteLine("- Review privacy settings on social media");
-                Console.WriteLine("- Be careful what personal info you share online");
-                Console.WriteLine("- Use private browsing when appropriate");
-                Console.WriteLine("- Consider using privacy-focused search engines");
-                Console.WriteLine("- Regularly check app permissions on your devices");
-            }
-            else if (input.Contains("social") || input.Contains("engineer"))
-            {
-                TypeWriterEffect("Social engineering tricks people into breaking security procedures:");
-                Console.WriteLine("- Be skeptical of urgent requests for information");
-                Console.WriteLine("- Verify identities before sharing sensitive info");
-                Console.WriteLine("- Don't trust caller ID because it can be spoofed");
-                Console.WriteLine("- Be cautious of 'too good to be true' offers");
-                Console.WriteLine("- Educate yourself about common tactics");
+                TypeWriterEffect($"Goodbye, {userName}! Remember to practice good {userMemory["interest"]} habits!");
             }
             else
             {
-                // Input didn't match any known keywords
-                responseFound = false;
+                TypeWriterEffect($"Goodbye, {userName}! Stay safe online!");
             }
-
-            if (!responseFound)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                TypeWriterEffect("I'm not sure I understand. Could you try asking about:");
-                Console.WriteLine("- Passwords");
-                Console.WriteLine("- Phishing");
-                Console.WriteLine("- Safe browsing");
-                Console.WriteLine("- Or ensure your spelling is correct");
-                Console.WriteLine("- Type 'help' for more options");
-            }
-
+            
             Console.ResetColor();
-            Console.WriteLine();
         }
 
         // Simulates typing effect for text display
