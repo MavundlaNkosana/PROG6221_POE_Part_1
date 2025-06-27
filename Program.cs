@@ -2,6 +2,8 @@
 using System.Media;
 using System.Threading;
 using System.Collections.Generic;
+using CyberKnight;
+
 
 namespace CyberKnight
 {
@@ -9,6 +11,8 @@ namespace CyberKnight
     {
         // Memory storage for user preferences
         private static Dictionary<string, string> userMemory = new Dictionary<string, string>();
+
+       
         
         // Response banks for varied answers
         private static Dictionary<string, List<string>> responseBank = new Dictionary<string, List<string>>()
@@ -46,6 +50,19 @@ namespace CyberKnight
                 "- Educate yourself about common tactics",
             }}
         };
+
+        //Activity to track key actions
+        public static List<string> activityLog = new List<string>();
+        public const int maxLogEntries = 10;
+
+        public static void LogActivity(string message) {
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            activityLog.Add($"[{timestamp}]{message}");
+
+            if (activityLog.Count > maxLogEntries) {
+                activityLog.RemoveAt(0);
+            }
+        }
 
         static void Main(string[] args)
         {
@@ -118,7 +135,7 @@ Cybersecurity Awareness Assistant
             }
 
             Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Hello, {userName}! I'm CyberKnight, here to help you stay safe online.");
             Console.ResetColor();
             Console.WriteLine();
@@ -171,10 +188,40 @@ Cybersecurity Awareness Assistant
                     continue;
                 }
 
+                if (userInput.Contains("activity log") || userInput.Contains("what have you done"))
+                {
+                    DisplayActivityLog();
+                    continue;
+                }
+
+
                 // Process input and update current topic
                 currentTopic = ProcessUserInputWithFlow(userInput, userName, currentTopic);
             }
         }
+
+        static void DisplayActivityLog()
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("📋 Recent Activity Log:");
+            Console.ResetColor();
+
+            if (activityLog.Count == 0)
+            {
+                Console.WriteLine("No recent actions recorded.");
+                return;
+            }
+
+            int index = 1;
+            foreach (var entry in activityLog)
+            {
+                Console.WriteLine($"{index}. {entry}");
+                index++;
+            }
+
+            Console.WriteLine();
+        }
+
 
         static string ProcessUserInputWithFlow(string input, string userName, string currentTopic)
         {
@@ -209,30 +256,33 @@ Cybersecurity Awareness Assistant
             bool isCurious = input.Contains("curious") || input.Contains("wonder") || input.Contains("tell me");
             bool isFrustrated = input.Contains("angry") || input.Contains("frustrated") || input.Contains("annoyed");
 
-            // Memory recall for personalization
+            // Memory recall
             if (input.Contains("remember") && userMemory.ContainsKey("interest"))
             {
-                TypeWriterEffect($"I remember you're interested in {userMemory["interest"]}. " + 
+                TypeWriterEffect($"I remember you're interested in {userMemory["interest"]}. " +
                                 $"Here's something new about {userMemory["interest"]}...");
                 ProcessUserInput(userMemory["interest"], userName);
                 return;
             }
 
-            // Enhanced keyword recognition with random responses
+ 
+
+
+            // Predefined keyword responses
             if (input.Contains("how are you"))
             {
                 string[] greetings = {
-                    "I'm functioning at optimal security levels! How about you?",
-                    "My firewalls are up and I'm ready to help!",
-                    "I'm doing great! Always happy to discuss cybersecurity."
-                };
+            "I'm functioning at optimal security levels! How about you?",
+            "My firewalls are up and I'm ready to help!",
+            "I'm doing great! Always happy to discuss cybersecurity."
+        };
                 Random rand = new Random();
                 TypeWriterEffect(greetings[rand.Next(greetings.Length)]);
             }
             else if (input.Contains("purpose") || input.Contains("why do you exist"))
             {
                 TypeWriterEffect("My purpose is to educate South African citizens about cybersecurity threats " +
-                                "and best practices to stay safe online.");
+                                 "and best practices to stay safe online.");
             }
             else if (input.Contains("what can i ask") || input.Contains("topics"))
             {
@@ -241,64 +291,131 @@ Cybersecurity Awareness Assistant
             else if (input.Contains("password"))
             {
                 if (isWorried) TypeWriterEffect("I understand password security can feel overwhelming. ");
-                string response = GetRandomResponse("password");
-                TypeWriterEffect(response);
-                
-                if (!userMemory.ContainsKey("interest")) 
-                    userMemory.Add("interest", "password security");
+                TypeWriterEffect(GetRandomResponse("password"));
+                if (!userMemory.ContainsKey("interest")) userMemory.Add("interest", "password security");
             }
             else if (input.Contains("phish") || input.Contains("scam"))
             {
                 if (isWorried) TypeWriterEffect("Phishing scams are common but preventable. ");
-                string response = GetRandomResponse("phishing");
-                TypeWriterEffect(response);
-                
-                if (!userMemory.ContainsKey("interest")) 
-                    userMemory.Add("interest", "phishing prevention");
+                TypeWriterEffect(GetRandomResponse("phishing"));
+                if (!userMemory.ContainsKey("interest")) userMemory.Add("interest", "phishing prevention");
             }
             else if (input.Contains("privacy"))
             {
                 if (isCurious) TypeWriterEffect("Great question! Privacy is crucial online. ");
-                string response = GetRandomResponse("privacy");
-                TypeWriterEffect(response);
-                
-                if (!userMemory.ContainsKey("interest")) 
-                    userMemory.Add("interest", "online privacy");
+                TypeWriterEffect(GetRandomResponse("privacy"));
+                if (!userMemory.ContainsKey("interest")) userMemory.Add("interest", "online privacy");
             }
             else if (input.Contains("malware"))
             {
                 if (isFrustrated) TypeWriterEffect("Malware can be frustrating, but prevention is possible. ");
-                string response = GetRandomResponse("malware");
-                TypeWriterEffect(response);
-                
-                if (!userMemory.ContainsKey("interest")) 
-                    userMemory.Add("interest", "malware protection");
+                TypeWriterEffect(GetRandomResponse("malware"));
+                if (!userMemory.ContainsKey("interest")) userMemory.Add("interest", "malware protection");
             }
             else if (input.Contains("brows") || input.Contains("internet"))
             {
                 if (isCurious) TypeWriterEffect("Safe browsing is essential in today's digital world. ");
-                string response = GetRandomResponse("browsing");
-                TypeWriterEffect(response);
-                
-                if (!userMemory.ContainsKey("interest")) 
-                    userMemory.Add("interest", "safe browsing");
+                TypeWriterEffect(GetRandomResponse("browsing"));
+                if (!userMemory.ContainsKey("interest")) userMemory.Add("interest", "safe browsing");
             }
             else if (input.Contains("social") || input.Contains("engineer"))
             {
-                
                 if (isCurious) TypeWriterEffect("Social engineering tricks people into breaking security procedures:");
-                string response = GetRandomResponse("engineering");
-                TypeWriterEffect(response);
-
-                if (!userMemory.ContainsKey("interest"))
-                    userMemory.Add("interest", "engineering");
+                TypeWriterEffect(GetRandomResponse("engineering"));
+                if (!userMemory.ContainsKey("interest")) userMemory.Add("interest", "engineering");
             }
             else
             {
-                responseFound = false;
+                // NLP Intent detection
+                // NLP Intent detection
+                string intent = DetectIntent(input);
+
+                // Log recognized intent
+                if (intent == "task")
+                {
+                    LogActivity("Detected intent: Add Task");
+                    TypeWriterEffect("Sure! Let's add a task. What would you like the title to be?");
+                    TaskManager.StartTaskCreation();
+                    return;
+                }
+                else if (intent == "quiz")
+                {
+                    LogActivity("Detected intent: Start Quiz");
+                    TypeWriterEffect("Awesome! Let's test your cybersecurity knowledge!");
+                    CyberQuizGame.StartGame();
+                    return;
+                }
+
+
+                if (intent == "task")
+                {
+                    TypeWriterEffect("Sure! Let's add a task. What would you like the title to be?");
+                    TaskManager.StartTaskCreation();
+                    return;
+                }
+                else if (intent == "quiz")
+                {
+                    TypeWriterEffect("Awesome! Let's test your cybersecurity knowledge!");
+                    CyberQuizGame.StartGame();
+                    return;
+                }
+
+                // Additional task-related logic (fallback commands)
+                if (input.StartsWith("add task"))
+                {
+                    string taskTitle = input.Replace("add task", "").Trim();
+                    if (string.IsNullOrWhiteSpace(taskTitle))
+                    {
+                        Console.WriteLine("Please provide a task title.");
+                    }
+                    else
+                    {
+                        string desc = $"Cybersecurity Task: {taskTitle}";
+                        TaskManager.AddTask(taskTitle, desc);
+                        Console.Write("Would you like a reminder? ");
+                    }
+                }
+                else if (input.Contains("remind me"))
+                {
+                    TaskManager.SetReminder(input);
+                }
+                else if (input.Contains("view task"))
+                {
+                    TaskManager.ViewTasks();
+                }
+                else if (input.StartsWith("complete task"))
+                {
+                    var parts = input.Split(' ');
+                    if (parts.Length >= 3 && int.TryParse(parts[2], out int index))
+                    {
+                        TaskManager.CompleteTask(index);
+                        LogActivity($"Task {index} marked as completed.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ Please specify the task number to complete. Example: complete task 2");
+                    }
+                }
+                else if (input.StartsWith("delete task"))
+                {
+                    var parts = input.Split(' ');
+                    if (parts.Length >= 3 && int.TryParse(parts[2], out int index))
+                    {
+                        TaskManager.DeleteTask(index);
+                        LogActivity($"Task {index} deleted.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ Please specify the task number to delete. Example: delete task 1");
+                    }
+                }
+                else
+                {
+                    responseFound = false;
+                }
             }
 
-            // Enhanced sentiment responses
+            // Sentiment responses
             if (isWorried)
             {
                 TypeWriterEffect("\nI understand this can be concerning. Remember, being aware is the first step to protection!");
@@ -312,6 +429,7 @@ Cybersecurity Awareness Assistant
                 TypeWriterEffect("\nThat's an excellent question! Knowledge is your best defense.");
             }
 
+            // Fallback response
             if (!responseFound)
             {
                 HandleUnknownInput();
@@ -320,6 +438,7 @@ Cybersecurity Awareness Assistant
             Console.ResetColor();
             Console.WriteLine();
         }
+
 
         static string GetRandomResponse(string topic)
         {
@@ -349,18 +468,26 @@ Cybersecurity Awareness Assistant
         static void DisplayHelp()
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("__________________________________________");
-            Console.WriteLine("|          Available Topics              |");
-            Console.WriteLine("|________________________________________|");
-            Console.WriteLine("| • Passwords      • Phishing              |");
-            Console.WriteLine("| • Browsing       • Social Engineering    |");
-            Console.WriteLine("| • Malware        • Privacy               |");
-            Console.WriteLine("| • How are you?   • What's your purpose?  |");
-            Console.WriteLine("| • What can I ask you about?             |");
-            Console.WriteLine("|________________________________________|");
+            Console.WriteLine("_____________________________________________________");
+            Console.WriteLine("|                  Available Features               |");
+            Console.WriteLine("|___________________________________________________|");
+            Console.WriteLine("| • Passwords            • Phishing                   |");
+            Console.WriteLine("| • Malware              • Privacy                    |");
+            Console.WriteLine("| • Safe Browsing        • Social Engineering         |");
+            Console.WriteLine("| • How are you?         • What's your purpose?       |");
+            Console.WriteLine("|___________________________________________________|");
+            Console.WriteLine("|                    Extra Commands                 |");
+            Console.WriteLine("|___________________________________________________|");
+            Console.WriteLine("| • Add Task / View Tasks / Complete Task            |");
+            Console.WriteLine("| • Set Reminders (e.g. 'Remind me in 3 days')       |");
+            Console.WriteLine("| • Start Quiz (e.g. 'Let's play a quiz')            |");
+            Console.WriteLine("| • Show Activity Log / What have you done?          |");
+            Console.WriteLine("| • Remember / Recall Interests (Conversation Memory)|");
+            Console.WriteLine("|___________________________________________________|");
             Console.ResetColor();
             Console.WriteLine();
         }
+
 
         static void EndConversation(string userName)
         {
@@ -378,6 +505,31 @@ Cybersecurity Awareness Assistant
             
             Console.ResetColor();
         }
+
+        static string DetectIntent(string input)
+        {
+            input = input.ToLower();
+
+            if ((input.Contains("add") || input.Contains("set") || input.Contains("remind")) &&
+                (input.Contains("task") || input.Contains("reminder") || input.Contains("to")))
+            {
+                return "task";
+            }
+
+            if (input.Contains("quiz") || input.Contains("game") || input.Contains("test"))
+            {
+                return "quiz";
+            }
+
+            if (input.Contains("password") || input.Contains("phishing") || input.Contains("malware") ||
+                input.Contains("privacy") || input.Contains("browsing") || input.Contains("engineering"))
+            {
+                return "cyber_topic";
+            }
+
+            return "unknown";
+        }
+
 
         // Simulates typing effect for text display
         static void TypeWriterEffect(string text, int delay = 30)
