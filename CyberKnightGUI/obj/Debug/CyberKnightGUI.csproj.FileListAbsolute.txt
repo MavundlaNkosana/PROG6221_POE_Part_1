@@ -1,0 +1,11 @@
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.csproj.AssemblyReference.cache
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.MainForm.resources
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.Properties.Resources.resources
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.csproj.GenerateResource.cache
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.csproj.CoreCompileInputs.cache
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.QuizForm.resources
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\bin\Debug\CyberKnightGUI.exe.config
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\bin\Debug\CyberKnightGUI.exe
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\bin\Debug\CyberKnightGUI.pdb
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.exe
+C:\Users\lab_services_student\Desktop\PROG6221_POE_part_1\CyberKnightGUI\obj\Debug\CyberKnightGUI.pdb
